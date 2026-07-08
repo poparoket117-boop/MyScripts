@@ -1,0 +1,436 @@
+-- DrunixHub v3.0 (Tabbed Interface)
+-- Вкладки: Инфо | 99 Ночeй | Player | Fun
+-- Оранжево-белый стиль, мультяшный кот
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+-- GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DrunixHub"
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 420, 0, 550)
+MainFrame.Position = UDim2.new(0.5, -210, 0.5, -275)
+MainFrame.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+MainFrame.BackgroundTransparency = 0.15
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local WhitePanel = Instance.new("Frame")
+WhitePanel.Size = UDim2.new(0.96, 0, 0.93, 0)
+WhitePanel.Position = UDim2.new(0.02, 0, 0.035, 0)
+WhitePanel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+WhitePanel.BackgroundTransparency = 0.1
+WhitePanel.BorderSizePixel = 0
+WhitePanel.Parent = MainFrame
+
+-- Заголовок с котом
+local TitleFrame = Instance.new("Frame")
+TitleFrame.Size = UDim2.new(1, 0, 0, 50)
+TitleFrame.BackgroundTransparency = 1
+TitleFrame.Parent = WhitePanel
+
+local CatLabel = Instance.new("TextLabel")
+CatLabel.Size = UDim2.new(0.5, 0, 1, 0)
+CatLabel.Position = UDim2.new(0.25, 0, 0, 0)
+CatLabel.Text = " (=^･ω･^=) DrunixHub "
+CatLabel.TextColor3 = Color3.fromRGB(255, 140, 0)
+CatLabel.TextScaled = true
+CatLabel.Font = Enum.Font.ComicSans
+CatLabel.BackgroundTransparency = 1
+CatLabel.Parent = TitleFrame
+
+-- Анимированный кот
+local CatPulse = Instance.new("TextLabel")
+CatPulse.Size = UDim2.new(0.15, 0, 1, 0)
+CatPulse.Position = UDim2.new(0.02, 0, 0, 0)
+CatPulse.Text = "😺"
+CatPulse.TextScaled = true
+CatPulse.BackgroundTransparency = 1
+CatPulse.Parent = TitleFrame
+
+RunService.Heartbeat:Connect(function()
+    local scale = 0.9 + 0.1 * math.sin(tick() * 4)
+    CatPulse.TextScaled = false
+    CatPulse.TextSize = 30 * scale
+    CatPulse.TextScaled = true
+end)
+
+-- Закрытие
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+CloseBtn.Position = UDim2.new(0.93, 0, 0.01, 0)
+CloseBtn.Text = "✕"
+CloseBtn.TextColor3 = Color3.fromRGB(255,255,255)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+CloseBtn.Font = Enum.Font.ComicSans
+CloseBtn.TextScaled = true
+CloseBtn.Parent = MainFrame
+CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
+
+-- ===== КОНТЕЙНЕР ВКЛАДОК =====
+local TabContainer = Instance.new("Frame")
+TabContainer.Size = UDim2.new(1, 0, 0, 35)
+TabContainer.Position = UDim2.new(0, 0, 0, 50)
+TabContainer.BackgroundTransparency = 1
+TabContainer.Parent = WhitePanel
+
+-- Контейнер содержимого
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Size = UDim2.new(0.96, 0, 0.72, 0)
+ContentFrame.Position = UDim2.new(0.02, 0, 0.18, 0)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.Parent = WhitePanel
+
+-- Табы (кнопки)
+local tabs = {}
+local currentTab = nil
+
+local function createTab(name, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.22, 0, 1, 0)
+    btn.Position = UDim2.new(#tabs * 0.23 + 0.02, 0, 0, 0)
+    btn.Text = name
+    btn.TextColor3 = Color3.fromRGB(255,255,255)
+    btn.TextScaled = true
+    btn.Font = Enum.Font.ComicSans
+    btn.BackgroundColor3 = Color3.fromRGB(255, 120, 0)
+    btn.BorderSizePixel = 0
+    btn.Parent = TabContainer
+    btn.MouseButton1Click:Connect(function()
+        for _, t in ipairs(tabs) do
+            t.Button.BackgroundColor3 = Color3.fromRGB(255, 120, 0)
+        end
+        btn.BackgroundColor3 = Color3.fromRGB(255, 200, 50)
+        currentTab = name
+        callback()
+    end)
+    table.insert(tabs, {Button = btn, Name = name})
+    return btn
+end
+
+-- Очистка контента
+local function clearContent()
+    for _, child in ipairs(ContentFrame:GetChildren()) do
+        child:Destroy()
+    end
+end
+
+-- ===== ВКЛАДКА 1: ИНФОРМАЦИЯ =====
+createTab("📋 Инфо", function()
+    clearContent()
+    local info = Instance.new("TextLabel")
+    info.Size = UDim2.new(0.9, 0, 0.8, 0)
+    info.Position = UDim2.new(0.05, 0, 0.1, 0)
+    info.Text = [[DrunixHub v3.0
+Оранжево-белый стиль
+Котик в мультяшном стиле
+
+Разработчик: SWILL
+Дата: 2026
+
+Горячие клавиши:
+RMB - Телепорт
+F9 - Скрыть/показать GUI
+]]
+    info.TextColor3 = Color3.fromRGB(50,50,50)
+    info.TextScaled = true
+    info.BackgroundTransparency = 1
+    info.Font = Enum.Font.ComicSans
+    info.Parent = ContentFrame
+end)
+
+-- ===== ВКЛАДКА 2: 99 НОЧЕЙ В ЛЕСУ =====
+createTab("🌲 99 ночей", function()
+    clearContent()
+    -- Имитация ночного леса: свечение, звуки (визуально)
+    local forestLabel = Instance.new("TextLabel")
+    forestLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    forestLabel.Position = UDim2.new(0, 0, 0, 0)
+    forestLabel.Text = "🌙 Лесная зона (99 ночей)"
+    forestLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
+    forestLabel.TextScaled = true
+    forestLabel.BackgroundTransparency = 1
+    forestLabel.Font = Enum.Font.ComicSans
+    forestLabel.Parent = ContentFrame
+
+    local nightBtn = Instance.new("TextButton")
+    nightBtn.Size = UDim2.new(0.7, 0, 0.15, 0)
+    nightBtn.Position = UDim2.new(0.15, 0, 0.35, 0)
+    nightBtn.Text = "🌑 Включить ночной режим"
+    nightBtn.TextColor3 = Color3.fromRGB(255,255,255)
+    nightBtn.BackgroundColor3 = Color3.fromRGB(80, 40, 20)
+    nightBtn.Font = Enum.Font.ComicSans
+    nightBtn.TextScaled = true
+    nightBtn.Parent = ContentFrame
+    nightBtn.MouseButton1Click:Connect(function()
+        game.Lighting.Brightness = 0.1
+        game.Lighting.Ambient = Color3.fromRGB(30, 30, 50)
+        game.Lighting.FogEnd = 60
+        game.Lighting.FogColor = Color3.fromRGB(20, 20, 30)
+        -- Добавляем лесные звуки (петля)
+        local sound = Instance.new("Sound")
+        sound.SoundId = "rbxassetid://9120398432" -- ветер/лес
+        sound.Looped = true
+        sound.Volume = 0.3
+        sound.Parent = workspace
+        sound:Play()
+        wait(0.5)
+        sound:Destroy()
+    end)
+
+    local dayBtn = Instance.new("TextButton")
+    dayBtn.Size = UDim2.new(0.7, 0, 0.15, 0)
+    dayBtn.Position = UDim2.new(0.15, 0, 0.55, 0)
+    dayBtn.Text = "☀️ Вернуть день"
+    dayBtn.TextColor3 = Color3.fromRGB(255,255,255)
+    dayBtn.BackgroundColor3 = Color3.fromRGB(255, 200, 100)
+    dayBtn.Font = Enum.Font.ComicSans
+    dayBtn.TextScaled = true
+    dayBtn.Parent = ContentFrame
+    dayBtn.MouseButton1Click:Connect(function()
+        game.Lighting.Brightness = 1
+        game.Lighting.Ambient = Color3.fromRGB(127, 127, 127)
+        game.Lighting.FogEnd = 100000
+        game.Lighting.FogColor = Color3.fromRGB(127, 127, 127)
+    end)
+
+    -- Счётчик ночей (симуляция)
+    local nightCounter = Instance.new("TextLabel")
+    nightCounter.Size = UDim2.new(0.8, 0, 0.15, 0)
+    nightCounter.Position = UDim2.new(0.1, 0, 0.75, 0)
+    nightCounter.Text = "Ночь 0 / 99"
+    nightCounter.TextColor3 = Color3.fromRGB(255, 165, 0)
+    nightCounter.TextScaled = true
+    nightCounter.BackgroundTransparency = 1
+    nightCounter.Font = Enum.Font.ComicSans
+    nightCounter.Parent = ContentFrame
+
+    local count = 0
+    nightBtn.MouseButton1Click:Connect(function()
+        count = count + 1
+        if count > 99 then count = 99 end
+        nightCounter.Text = "Ночь " .. count .. " / 99"
+        if count == 99 then
+            nightCounter.Text = "🏆 99 ночей завершено!"
+        end
+    end)
+end)
+
+-- ===== ВКЛАДКА 3: PLAYER =====
+createTab("👤 Player", function()
+    clearContent()
+    local stats = Instance.new("TextLabel")
+    stats.Size = UDim2.new(0.9, 0, 0.25, 0)
+    stats.Position = UDim2.new(0.05, 0, 0, 0)
+    stats.Text = "Игрок: " .. LocalPlayer.Name .. "\nWalkSpeed: 16 | JumpPower: 50"
+    stats.TextColor3 = Color3.fromRGB(50,50,50)
+    stats.TextScaled = true
+    stats.BackgroundTransparency = 1
+    stats.Font = Enum.Font.ComicSans
+    stats.Parent = ContentFrame
+
+    -- Speed Slider
+    local speedLabel = Instance.new("TextLabel")
+    speedLabel.Size = UDim2.new(0.3, 0, 0.1, 0)
+    speedLabel.Position = UDim2.new(0.05, 0, 0.3, 0)
+    speedLabel.Text = "Speed: 16"
+    speedLabel.TextColor3 = Color3.fromRGB(255, 140, 0)
+    speedLabel.TextScaled = true
+    speedLabel.BackgroundTransparency = 1
+    speedLabel.Font = Enum.Font.ComicSans
+    speedLabel.Parent = ContentFrame
+
+    local speedSlider = Instance.new("TextButton")
+    speedSlider.Size = UDim2.new(0.5, 0, 0.08, 0)
+    speedSlider.Position = UDim2.new(0.35, 0, 0.3, 0)
+    speedSlider.Text = "16"
+    speedSlider.TextColor3 = Color3.fromRGB(255,255,255)
+    speedSlider.BackgroundColor3 = Color3.fromRGB(255, 120, 0)
+    speedSlider.Font = Enum.Font.ComicSans
+    speedSlider.TextScaled = true
+    speedSlider.Parent = ContentFrame
+    local spd = 16
+    speedSlider.MouseButton1Click:Connect(function()
+        spd = spd + 5
+        if spd > 120 then spd = 16 end
+        speedSlider.Text = tostring(spd)
+        speedLabel.Text = "Speed: " .. spd
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = spd
+        end
+    end)
+
+    -- Jump Power
+    local jumpLabel = Instance.new("TextLabel")
+    jumpLabel.Size = UDim2.new(0.3, 0, 0.1, 0)
+    jumpLabel.Position = UDim2.new(0.05, 0, 0.45, 0)
+    jumpLabel.Text = "Jump: 50"
+    jumpLabel.TextColor3 = Color3.fromRGB(255, 140, 0)
+    jumpLabel.TextScaled = true
+    jumpLabel.BackgroundTransparency = 1
+    jumpLabel.Font = Enum.Font.ComicSans
+    jumpLabel.Parent = ContentFrame
+
+    local jumpSlider = Instance.new("TextButton")
+    jumpSlider.Size = UDim2.new(0.5, 0, 0.08, 0)
+    jumpSlider.Position = UDim2.new(0.35, 0, 0.45, 0)
+    jumpSlider.Text = "50"
+    jumpSlider.TextColor3 = Color3.fromRGB(255,255,255)
+    jumpSlider.BackgroundColor3 = Color3.fromRGB(255, 120, 0)
+    jumpSlider.Font = Enum.Font.ComicSans
+    jumpSlider.TextScaled = true
+    jumpSlider.Parent = ContentFrame
+    local jmp = 50
+    jumpSlider.MouseButton1Click:Connect(function()
+        jmp = jmp + 10
+        if jmp > 200 then jmp = 50 end
+        jumpSlider.Text = tostring(jmp)
+        jumpLabel.Text = "Jump: " .. jmp
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.JumpPower = jmp
+        end
+    end)
+
+    -- Teleport to spawn
+    local tpBtn = Instance.new("TextButton")
+    tpBtn.Size = UDim2.new(0.5, 0, 0.12, 0)
+    tpBtn.Position = UDim2.new(0.25, 0, 0.6, 0)
+    tpBtn.Text = "📍 TP к спавну"
+    tpBtn.TextColor3 = Color3.fromRGB(255,255,255)
+    tpBtn.BackgroundColor3 = Color3.fromRGB(200, 100, 0)
+    tpBtn.Font = Enum.Font.ComicSans
+    tpBtn.TextScaled = true
+    tpBtn.Parent = ContentFrame
+    tpBtn.MouseButton1Click:Connect(function()
+        local spawn = workspace:FindFirstChild("SpawnLocation")
+        if spawn and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = spawn.CFrame + Vector3.new(0, 3, 0)
+        end
+    end)
+end)
+
+-- ===== ВКЛАДКА 4: FUN =====
+createTab("🎉 Fun", function()
+    clearContent()
+    -- Эффекты и развлечения
+    local funLabel = Instance.new("TextLabel")
+    funLabel.Size = UDim2.new(1, 0, 0.15, 0)
+    funLabel.Position = UDim2.new(0, 0, 0, 0)
+    funLabel.Text = "🎈 Весёлые штуки"
+    funLabel.TextColor3 = Color3.fromRGB(255, 165, 0)
+    funLabel.TextScaled = true
+    funLabel.BackgroundTransparency = 1
+    funLabel.Font = Enum.Font.ComicSans
+    funLabel.Parent = ContentFrame
+
+    local function makeFunBtn(text, y, callback, color)
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(0.7, 0, 0.12, 0)
+        btn.Position = UDim2.new(0.15, 0, y, 0)
+        btn.Text = text
+        btn.TextColor3 = Color3.fromRGB(255,255,255)
+        btn.BackgroundColor3 = color or Color3.fromRGB(255, 100, 0)
+        btn.Font = Enum.Font.ComicSans
+        btn.TextScaled = true
+        btn.Parent = ContentFrame
+        btn.MouseButton1Click:Connect(callback)
+        return btn
+    end
+
+    makeFunBtn("🎆 Фейерверк (частицы)", 0.2, function()
+        local part = Instance.new("Part")
+        part.Size = Vector3.new(2,2,2)
+        part.Position = LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 5, 0)
+        part.Anchored = true
+        part.Parent = workspace
+        local att = Instance.new("Attachment", part)
+        local emit = Instance.new("ParticleEmitter", att)
+        emit.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+        emit.Rate = 200
+        emit.Lifetime = NumberRange.new(1, 2)
+        emit.SpreadAngle = Vector2.new(360, 360)
+        emit.VelocityInheritance = 0
+        emit.Speed = NumberRange.new(10, 30)
+        emit.Color = ColorSequence.new(Color3.fromRGB(255,165,0), Color3.fromRGB(255,255,255))
+        emit.Enabled = true
+        wait(0.5)
+        emit.Enabled = false
+        wait(1)
+        part:Destroy()
+    end)
+
+    makeFunBtn("🕺 Танец (анимация)", 0.35, function()
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("Humanoid") then
+            local anim = Instance.new("Animation")
+            anim.AnimationId = "rbxassetid://5077730892" -- анимация танца
+            local track = char.Humanoid:LoadAnimation(anim)
+            track:Play()
+            wait(3)
+            track:Stop()
+        end
+    end, Color3.fromRGB(200, 80, 200))
+
+    makeFunBtn("🐱 Призвать кота (меш)", 0.5, function()
+        local cat = Instance.new("Part")
+        cat.Size = Vector3.new(2, 2, 2)
+        cat.Position = LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(0, 0, 5)
+        cat.Shape = Enum.PartType.Cylinder
+        cat.Color = Color3.fromRGB(255, 165, 0)
+        cat.Anchored = true
+        cat.Parent = workspace
+        local decal = Instance.new("Decal")
+        decal.Texture = "rbxassetid://6019171376" -- текстура кота
+        decal.Face = Enum.NormalId.Front
+        decal.Parent = cat
+        wait(3)
+        cat:Destroy()
+    end, Color3.fromRGB(255, 200, 0))
+
+    makeFunBtn("💥 Взрыв (эффект)", 0.65, function()
+        local pos = LocalPlayer.Character.HumanoidRootPart.Position
+        local explosion = Instance.new("Explosion")
+        explosion.Position = pos + Vector3.new(0, 2, 0)
+        explosion.BlastRadius = 10
+        explosion.BlastPressure = 0
+        explosion.Parent = workspace
+    end, Color3.fromRGB(255, 50, 50))
+end)
+
+-- Активация первой вкладки
+local firstTab = tabs[1]
+if firstTab then
+    firstTab.Button.BackgroundColor3 = Color3.fromRGB(255, 200, 50)
+    currentTab = firstTab.Name
+    firstTab.Button.MouseButton1Click:Fire()
+end
+
+-- Телепорт по RMB
+UserInputService.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        local mouse = LocalPlayer:GetMouse()
+        if mouse and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.p + Vector3.new(0, 2, 0))
+        end
+    end
+end)
+
+-- Anti-AFK
+local vu = game:GetService("VirtualUser")
+LocalPlayer.Idled:Connect(function()
+    vu:Button2Down(Vector2.new(0,0), Camera.CFrame)
+    wait(0.2)
+    vu:Button2Up(Vector2.new(0,0), Camera.CFrame)
+end)
+
+print("DrunixHub v3.0 с вкладками загружен! Котик мяукает 🐱")

@@ -1,20 +1,53 @@
--- DrunixHub v9.0 (Минимальное меню)
+-- DrunixHub v10 (Круглая кнопка + мемный кот)
 local Players=game:GetService("Players")
 local Tween=game:GetService("TweenService")
+local UIS=game:GetService("UserInputService")
 local lp=Players.LocalPlayer
 local gui=Instance.new("ScreenGui",lp:WaitForChild("PlayerGui"))
 
--- Кнопка входа
-local enter=Instance.new("TextButton",gui)
-enter.Size=UDim2.new(0,120,0,50)
-enter.Position=UDim2.new(0.5,-60,0.5,-25)
-enter.Text="🐱 Войти"
-enter.TextColor3=Color3.new(1,1,1)
-enter.BackgroundColor3=Color3.fromRGB(255,140,0)
-enter.Font=Enum.Font.ComicSans
-enter.TextScaled=true
+-- ===== КРУГЛАЯ КНОПКА ВХОДА (С МЕМНЫМ КОТОМ) =====
+local enter=Instance.new("ImageButton",gui)
+enter.Size=UDim2.new(0,80,0,80)
+enter.Position=UDim2.new(0.5,-40,0.5,-40)
+enter.Image="rbxassetid://6019171376" -- кот (можно заменить на любой мем)
+enter.BackgroundColor3=Color3.fromRGB(255,165,0)
+enter.BackgroundTransparency=0.2
+enter.BorderSizePixel=0
+-- Делаем круглым
+local corner=Instance.new("UICorner",enter)
+corner.CornerRadius=UDim.new(1,0)
 
--- Меню (скрыто)
+-- Текст поверх (необязательно)
+local label=Instance.new("TextLabel",enter)
+label.Size=UDim2.new(1,0,1,0)
+label.Text="Войти"
+label.TextColor3=Color3.new(1,1,1)
+label.TextScaled=true
+label.Font=Enum.Font.ComicSans
+label.BackgroundTransparency=1
+label.ZIndex=2
+
+-- ===== ПЕРЕТАСКИВАНИЕ КНОПКИ =====
+local drag=false
+local startPos
+enter.InputBegan:Connect(function(i)
+    if i.UserInputType==Enum.UserInputType.MouseButton1 then
+        drag=true
+        startPos=i.Position
+    end
+end)
+UIS.InputEnded:Connect(function(i)
+    if i.UserInputType==Enum.UserInputType.MouseButton1 then drag=false end
+end)
+UIS.InputChanged:Connect(function(i)
+    if drag and i.UserInputType==Enum.UserInputType.MouseMovement then
+        local delta=i.Position-startPos
+        local pos=enter.Position
+        enter.Position=UDim2.new(pos.X.Scale,pos.X.Offset+delta.X,pos.Y.Scale,pos.Y.Offset+delta.Y)
+    end
+end)
+
+-- ===== МЕНЮ (СКРЫТО) =====
 local menu=Instance.new("Frame",gui)
 menu.Size=UDim2.new(0,400,0,500)
 menu.Position=UDim2.new(0.5,-200,0.5,-250)
@@ -30,20 +63,23 @@ white.Position=UDim2.new(0.02,0,0.035,0)
 white.BackgroundColor3=Color3.new(1,1,1)
 white.BackgroundTransparency=0.15
 
-local header=Instance.new("Frame",white)
-header.Size=UDim2.new(1,0,0,60)
-header.BackgroundTransparency=1
+-- ===== МЕМНЫЙ КОТ В МЕНЮ =====
+local cat=Instance.new("ImageLabel",white)
+cat.Size=UDim2.new(0,60,0,60)
+cat.Position=UDim2.new(0.5,-30,0.05,0)
+cat.Image="rbxassetid://6019171376"
+cat.BackgroundTransparency=1
 
-local title=Instance.new("TextLabel",header)
-title.Size=UDim2.new(0.8,0,1,0)
-title.Position=UDim2.new(0.1,0,0,0)
+local title=Instance.new("TextLabel",white)
+title.Size=UDim2.new(0.8,0,0.08,0)
+title.Position=UDim2.new(0.1,0,0.2,0)
 title.Text="😺 DrunixHub"
 title.TextColor3=Color3.fromRGB(255,140,0)
 title.TextScaled=true
 title.Font=Enum.Font.ComicSans
 title.BackgroundTransparency=1
 
--- Три кнопки (свернуть, полный экран, выход)
+-- ===== ТРИ КНОПКИ =====
 local function btn(text,x,cb,col)
     local b=Instance.new("TextButton",menu)
     b.Size=UDim2.new(0,30,0,30)
@@ -61,17 +97,7 @@ local minBtn=btn("—",0.82,function()end)
 local fullBtn=btn("⛶",0.88,function()end)
 local closeBtn=btn("✕",0.94,function()end,Color3.fromRGB(200,0,0))
 
--- Текст по центру
-local info=Instance.new("TextLabel",white)
-info.Size=UDim2.new(0.85,0,0.5,0)
-info.Position=UDim2.new(0.075,0,0.2,0)
-info.Text="🐾 DrunixHub\nПросто меню\nБез функций\n\n— Наслаждайся"
-info.TextColor3=Color3.fromRGB(40,40,40)
-info.TextScaled=true
-info.Font=Enum.Font.ComicSans
-info.BackgroundTransparency=1
-
--- Логика
+-- ===== ЛОГИКА =====
 enter.MouseButton1Click:Connect(function()
     enter.Visible=false
     menu.Visible=true
@@ -109,11 +135,10 @@ end)
 
 closeBtn.MouseButton1Click:Connect(function()
     gui:Destroy()
-    print("DrunixHub отключён")
 end)
 
--- F9 скрыть/показать
-game:GetService("UserInputService").InputBegan:Connect(function(i)
+-- F9 показать/скрыть
+UIS.InputBegan:Connect(function(i)
     if i.KeyCode==Enum.KeyCode.F9 then
         if menu.Visible then
             menu.Visible=false
